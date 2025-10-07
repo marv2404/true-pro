@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TruePro Investments - Professional Trading Platform</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <h2>TruePro Investments</h2>
+            </div>
+            <div class="nav-menu">
+                <a href="index.html">Home</a>
+                <a href="plans.html">Account Plans</a>
+                <a href="register.html">Register</a>
+                <a href="login.html">Login</a>
+                <a href="admin.html">Admin</a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Professional Investment Solutions</h1>
+            <p>Join thousands of successful investors with our premium trading platform</p>
+            <div class="hero-buttons">
+                <a href="register.html" class="btn-primary">Get Started</a>
+                <a href="plans.html" class="btn-secondary">View Plans</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="features">
+        <div class="container">
+            <h2>Why Choose TruePro Investments?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <h3>Secure Trading</h3>
+                    <p>Advanced security measures to protect your investments</p>
+                </div>
+                <div class="feature-card">
+                    <h3>24/7 Support</h3>
+                    <p>Round-the-clock customer support for all your needs</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Advanced Tools</h3>
+                    <p>Professional trading tools and analytics</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="js/smartsupp.js"></script>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 TruePro Investments. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

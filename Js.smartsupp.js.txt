@@ -1,0 +1,23 @@
+function initializeSmartsupp() {
+    window.smartsupp = window.smartsupp || {};
+    window.smartsupp.key = 'YOUR_SMARTSUPP_KEY_HERE';
+    
+    const script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.async = true;
+    script.src = 'https://www.smartsupp.com/loader.min.js';
+    document.getElementsByTagName('head')[0].appendChild(script);
+    
+    window.smartsupp('name', 'TruePro Investments');
+    window.smartsupp('email', 'support@trueproinvestments.com');
+    
+    window.smartsupp('colors', {
+        primary: '#00d09c',
+        widgetText: '#ffffff',
+        widgetBg: '#1a1a1a'
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    initializeSmartsupp();
+});

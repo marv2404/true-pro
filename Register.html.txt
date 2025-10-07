@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - TruePro Investments</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <h2>TruePro Investments</h2>
+            </div>
+            <div class="nav-menu">
+                <a href="index.html">Home</a>
+                <a href="plans.html">Account Plans</a>
+                <a href="register.html">Register</a>
+                <a href="login.html">Login</a>
+                <a href="admin.html">Admin</a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="auth-section">
+        <div class="auth-container">
+            <div class="auth-form">
+                <h2>Create Your Account</h2>
+                <form id="registerForm">
+                    <div class="form-group">
+                        <label for="fullName">Full Name</label>
+                        <input type="text" id="fullName" name="fullName" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" name="phone" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="country">Country</label>
+                        <input type="text" id="country" name="country" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="accountPlan">Choose Account Plan</label>
+                        <select id="accountPlan" name="accountPlan" required>
+                            <option value="">Select Plan</option>
+                            <option value="basic">Basic - $250</option>
+                            <option value="silver">Silver - $5,000</option>
+                            <option value="gold">Gold - $20,000</option>
+                            <option value="platinum">Platinum - $50,000+</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary">Create Account</button>
+                </form>
+                
+                <div class="auth-link">
+                    <p>Already have an account? <a href="login.html">Login here</a></p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="js/auth.js"></script>
+    <script src="js/smartsupp.js"></script>
+    
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 TruePro Investments. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

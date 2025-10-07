@@ -1,0 +1,358 @@
+class UserManager {
+    constructor() {
+        this.users = JSON.parse(localStorage.getItem('truepro_users')) || [];
+        this.currentUser = JSON.parse(localStorage.getItem('current_user')) || null;
+        this.transactions = JSON.parse(localStorage.getItem('truepro_transactions')) || [];
+        this.paymentMethods = JSON.parse(localStorage.getItem('truepro_payment_methods')) || [];
+        this.adminCredentials = {
+            email: 'admin@trueproinvestments.com',
+            password: 'admin123'
+        };
+        
+        if (this.paymentMethods.length === 0) {
+            this.initializeDefaultPaymentMethods();
+        }
+    }
+
+    initializeDefaultPaymentMethods() {
+        this.paymentMethods = [
+            {
+                id: '1',
+                name: 'Bank Transfer',
+                type: 'bank',
+                status: 'active',
+                details: {
+                    bankName: 'Your Bank Name',
+                    accountName: 'TruePro Investments',
+                    accountNumber: '1234567890',
+                    routingNumber: '021000021',
+                    swiftCode: 'ABCDUS33'
+                }
+            },
+            {
+                id: '2',
+                name: 'Bitcoin',
+                type: 'crypto',
+                status: 'active',
+                details: {
+                    walletAddress: '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa',
+                    network: 'Bitcoin'
+                }
+            },
+            {
+                id: '3',
+                name: 'Ethereum',
+                type: 'crypto',
+                status: 'active',
+                details: {
+                    walletAddress: '0x742d35Cc6634C0532925a3b8D8a3b5a4f4a5a5a5',
+                    network: 'ERC20'
+                }
+            }
+        ];
+        this.savePaymentMethods();
+    }
+
+    register(userData) {
+        const existingUser = this.users.find(user => user.email === userData.email);
+        if (existingUser) {
+            throw new Error('User already exists with this email');
+        }
+
+        const newUser = {
+            id: Date.now().toString(),
+            ...userData,
+            balance: 0,
+            totalDeposited: 0,
+            totalWithdrawn: 0,
+            totalProfit: 0,
+            registrationDate: new Date().toISOString(),
+            status: 'active',
+            lastLogin: null,
+            transactions: []
+        };
+
+        this.users.push(newUser);
+        this.saveUsers();
+        return newUser;
+    }
+
+    getUserById(userId) {
+        return this.users.find(user => user.id === userId);
+    }
+
+    updateUserBalance(userId, amount, type, description = '') {
+        const user = this.getUserById(userId);
+        if (!user) throw new Error('User not found');
+
+        const transaction = {
+            id: Date.now().toString(),
+            userId: userId,
+            type: type,
+            amount: amount,
+            description: description,
+            status: type === 'adjustment' ? 'completed' : 'pending',
+            createdAt: new Date().toISOString(),
+            adminNote: ''
+        };
+
+        if (type === 'adjustment') {
+            user.balance += amount;
+            if (amount > 0) {
+                user.totalDeposited += amount;
+            } else {
+                user.totalWithdrawn += Math.abs(amount);
+            }
+            transaction.status = 'completed';
+        }
+
+        this.transactions.push(transaction);
+        user.transactions.push(transaction.id);
+        
+        this.saveUsers();
+        this.saveTransactions();
+        
+        return transaction;
+    }
+
+    approveTransaction(transactionId, adminNote = '') {
+        const transaction = this.transactions.find(t => t.id === transactionId);
+        if (!transaction) throw new Error('Transaction not found');
+
+        const user = this.getUserById(transaction.userId);
+        if (!user) throw new Error('User not found');
+
+        transaction.status = 'approved';
+        transaction.adminNote = adminNote;
+        transaction.approvedAt = new Date().toISOString();
+
+        if (transaction.type === 'deposit') {
+            user.balance += transaction.amount;
+            user.totalDeposited += transaction.amount;
+        } else if (transaction.type === 'withdrawal') {
+            user.balance -= transaction.amount;
+            user.totalWithdrawn += transaction.amount;
+        }
+
+        this.saveUsers();
+        this.saveTransactions();
+        
+        return transaction;
+    }
+
+    declineTransaction(transactionId, adminNote = '') {
+        const transaction = this.transactions.find(t => t.id === transactionId);
+        if (!transaction) throw new Error('Transaction not found');
+
+        transaction.status = 'declined';
+        transaction.adminNote = adminNote;
+        transaction.declinedAt = new Date().toISOString();
+
+        this.saveTransactions();
+        return transaction;
+    }
+
+    getPendingTransactions() {
+        return this.transactions.filter(t => t.status === 'pending');
+    }
+
+    getUserTransactions(userId) {
+        return this.transactions.filter(t => t.userId === userId);
+    }
+
+    addPaymentMethod(methodData) {
+        const newMethod = {
+            id: Date.now().toString(),
+            ...methodData,
+            createdAt: new Date().toISOString()
+        };
+        this.paymentMethods.push(newMethod);
+        this.savePaymentMethods();
+        return newMethod;
+    }
+
+    updatePaymentMethod(methodId, methodData) {
+        const methodIndex = this.paymentMethods.findIndex(m => m.id === methodId);
+        if (methodIndex === -1) throw new Error('Payment method not found');
+        
+        this.paymentMethods[methodIndex] = {
+            ...this.paymentMethods[methodIndex],
+            ...methodData
+        };
+        this.savePaymentMethods();
+        return this.paymentMethods[methodIndex];
+    }
+
+    deletePaymentMethod(methodId) {
+        this.paymentMethods = this.paymentMethods.filter(m => m.id !== methodId);
+        this.savePaymentMethods();
+    }
+
+    saveUsers() {
+        localStorage.setItem('truepro_users', JSON.stringify(this.users));
+    }
+
+    saveTransactions() {
+        localStorage.setItem('truepro_transactions', JSON.stringify(this.transactions));
+    }
+
+    savePaymentMethods() {
+        localStorage.setItem('truepro_payment_methods', JSON.stringify(this.paymentMethods));
+    }
+
+    getFinancialStats() {
+        const totalDeposits = this.transactions
+            .filter(t => t.type === 'deposit' && t.status === 'approved')
+            .reduce((sum, t) => sum + t.amount, 0);
+            
+        const totalWithdrawals = this.transactions
+            .filter(t => t.type === 'withdrawal' && t.status === 'approved')
+            .reduce((sum, t) => sum + t.amount, 0);
+            
+        const pendingDeposits = this.transactions
+            .filter(t => t.type === 'deposit' && t.status === 'pending')
+            .reduce((sum, t) => sum + t.amount, 0);
+            
+        const pendingWithdrawals = this.transactions
+            .filter(t => t.type === 'withdrawal' && t.status === 'pending')
+            .reduce((sum, t) => sum + t.amount, 0);
+
+        return {
+            totalDeposits,
+            totalWithdrawals,
+            pendingDeposits,
+            pendingWithdrawals,
+            platformBalance: totalDeposits - totalWithdrawals
+        };
+    }
+
+    login(email, password) {
+        if (email === this.adminCredentials.email && password === this.adminCredentials.password) {
+            const adminUser = {
+                id: 'admin',
+                fullName: 'Administrator',
+                email: this.adminCredentials.email,
+                role: 'admin'
+            };
+            this.currentUser = adminUser;
+            localStorage.setItem('current_user', JSON.stringify(adminUser));
+            return adminUser;
+        }
+
+        const user = this.users.find(u => u.email === email && u.password === password);
+        if (!user) {
+            throw new Error('Invalid email or password');
+        }
+
+        user.lastLogin = new Date().toISOString();
+        this.saveUsers();
+        this.currentUser = user;
+        localStorage.setItem('current_user', JSON.stringify(user));
+        return user;
+    }
+
+    logout() {
+        this.currentUser = null;
+        localStorage.removeItem('current_user');
+    }
+
+    getAllUsers() {
+        return this.users;
+    }
+
+    getUserStats() {
+        const today = new Date().toDateString();
+        const todayRegistrations = this.users.filter(user => 
+            new Date(user.registrationDate).toDateString() === today
+        ).length;
+
+        return {
+            totalUsers: this.users.length,
+            activeToday: this.users.filter(user => 
+                user.lastLogin && new Date(user.lastLogin).toDateString() === today
+            ).length,
+            newRegistrations: todayRegistrations
+        };
+    }
+
+    exportUsersToCSV() {
+        const headers = ['Name', 'Email', 'Phone', 'Country', 'Account Plan', 'Registration Date', 'Status'];
+        const csvData = this.users.map(user => [
+            user.fullName,
+            user.email,
+            user.phone,
+            user.country,
+            user.accountPlan,
+            new Date(user.registrationDate).toLocaleDateString(),
+            user.status
+        ]);
+
+        let csvContent = headers.join(',') + '\n';
+        csvData.forEach(row => {
+            csvContent += row.map(field => `"${field}"`).join(',') + '\n';
+        });
+
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.setAttribute('hidden', '');
+        a.setAttribute('href', url);
+        a.setAttribute('download', 'truepro_users.csv');
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
+}
+
+const userManager = new UserManager();
+
+if (document.getElementById('registerForm')) {
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = {
+            fullName: document.getElementById('fullName').value,
+            email: document.getElementById('email').value,
+            phone: document.getElementById('phone').value,
+            country: document.getElementById('country').value,
+            password: document.getElementById('password').value,
+            accountPlan: document.getElementById('accountPlan').value
+        };
+
+        try {
+            const user = userManager.register(formData);
+            alert('Registration successful! You can now login.');
+            window.location.href = 'login.html';
+        } catch (error) {
+            alert(error.message);
+        }
+    });
+}
+
+if (document.getElementById('loginForm')) {
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+
+        try {
+            const user = userManager.login(email, password);
+            if (user.role === 'admin') {
+                window.location.href = 'admin.html';
+            } else {
+                alert('Login successful!');
+                window.location.href = 'index.html';
+            }
+        } catch (error) {
+            alert(error.message);
+        }
+    });
+}
+
+if (document.getElementById('logoutBtn')) {
+    document.getElementById('logoutBtn').addEventListener('click', function() {
+        userManager.logout();
+        window.location.href = 'index.html';
+    });
+}
